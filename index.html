@@ -1,147 +1,147 @@
-HTML
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- 引入 LINE LIFF SDK (便於串接) -->
-  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <title>鹿鹿領地拼圖 (Deer Queens)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=no" />
+  <title>鹿鹿領地拼圖 - 入門版</title>
   <style>
+    * {
+      box-sizing: border-box;
+      touch-action: manipulation;
+    }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
-      background: #f4f6f0; /* 換成森林感的淡綠背景 */
-      color: #2e4a32; /* 深森綠字體 */
+      background: #f4f6f0;
+      color: #2e4a32;
+      margin: 0;
       padding: 20px;
+      user-select: none;
     }
-    h1 { margin-bottom: 8px; font-size: 1.8rem; }
+    h1 {
+      margin: 10px 0 6px;
+      font-size: 1.6rem;
+    }
+    .tips {
+      font-size: 0.9rem;
+      color: #557059;
+      margin-bottom: 12px;
+      text-align: center;
+    }
     .status-bar {
       margin-bottom: 16px;
       font-size: 1.2rem;
       font-weight: bold;
     }
-    #player-name {
-      margin-bottom: 8px;
-      font-size: 0.95rem;
-      color: #666;
+    #board-container {
+      background: #3e5a41;
+      padding: 10px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
     }
+    /* 4x4 大格子，手機超好按 */
     #board {
       display: grid;
-      grid-template-columns: repeat(6, 56px);
-      grid-template-rows: repeat(6, 56px);
-      gap: 3px;
-      background: #3e5a41; /* 森林深綠框 */
-      padding: 6px;
-      border-radius: 12px;
-      user-select: none;
+      grid-template-columns: repeat(4, 68px);
+      grid-template-rows: repeat(4, 68px);
+      gap: 6px;
     }
     .cell {
-      width: 56px;
-      height: 56px;
+      width: 68px;
+      height: 68px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 28px;
+      font-size: 32px;
+      font-weight: bold;
       cursor: pointer;
-      border-radius: 6px;
-      transition: transform 0.1s;
-      position: relative;
+      border-radius: 10px;
+      background: #fff;
+      transition: transform 0.08s;
     }
-    .cell:active { transform: scale(0.95); }
-    
-    /* 鹿鹿圖片樣式 */
-    .deer-img {
-      width: 48px;
-      height: 48px;
-      object-fit: contain;
+    .cell:active {
+      transform: scale(0.92);
     }
 
-    /* 6 種柔和森林系色塊 */
+    /* 4 種超清爽馬卡龍色塊 (0~3) */
     .zone-0 { background-color: #ffd8a8; } /* 暖橘 */
-    .zone-1 { background-color: #c3fae8; } /* 薄荷綠 */
-    .zone-2 { background-color: #d8f5a2; } /* 淺草綠 */
-    .zone-3 { background-color: #ffdeeb; } /* 櫻花粉 */
-    .zone-4 { background-color: #e5dbff; } /* 薰衣草 */
-    .zone-5 { background-color: #e2e6ea; } /* 迷霧灰 */
-    
+    .zone-1 { background-color: #c3fae8; } /* 薄荷 */
+    .zone-2 { background-color: #ffdeeb; } /* 粉紅 */
+    .zone-3 { background-color: #e5dbff; } /* 淺紫 */
+
+    .cross {
+      color: #8c9b8e;
+      line-height: 1;
+      font-size: 26px;
+    }
+    .deer-icon {
+      width: 50px;
+      height: 50px;
+      pointer-events: none;
+    }
     .msg {
       margin-top: 16px;
       font-size: 1.1rem;
-      height: 24px;
-      color: #b04b07; /* 醒目橘紅 */
+      min-height: 28px;
       font-weight: bold;
       text-align: center;
     }
-    .btn-container {
-      display: flex;
-      gap: 10px;
-      margin-top: 14px;
-    }
     .btn {
-      padding: 8px 18px;
-      background: #4f772d; /* 森林綠 */
+      margin-top: 14px;
+      padding: 10px 24px;
+      background: #4f772d;
       color: white;
       border: none;
       border-radius: 8px;
       font-size: 1rem;
       cursor: pointer;
-    }
-    .btn-share {
-      background: #118141; /* LINE 綠 */
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
 
-  <h1>🦌 鹿鹿領地拼圖</h1>
-  <div id="player-name"></div>
-  <div class="status-bar" id="counter">已放鹿鹿: 0 / 6</div>
-  <div id="board"></div>
-  <div class="msg" id="msg"></div>
+  <h1>🦌 鹿鹿領地拼圖 (新手版)</h1>
+  <div class="tips">規則：每行、每列、每個顏色只要 1 隻鹿！<br>放下一隻鹿，系統會自動幫你封鎖衝突格子。</div>
+  <div class="status-bar" id="counter">已放鹿鹿: 0 / 4</div>
   
-  <div class="btn-container">
-    <button class="btn" onclick="resetGame()">重置關卡</button>
-    <button class="btn btn-share" onclick="shareVictory()">分享給好友</button>
+  <div id="board-container">
+    <div id="board"></div>
   </div>
 
+  <div class="msg" id="msg"></div>
+  <button class="btn" onclick="resetGame()">重新開始</button>
+
   <script>
-    const N = 6;
-    // 預設一組 6x6 的色塊關卡
+    const N = 4;
+    // 超直覺的 4x4 色塊佈局
     const colorMap = [
-      [0, 0, 1, 1, 1, 2],
-      [0, 0, 0, 1, 2, 2],
-      [3, 0, 4, 4, 2, 2],
-      [3, 3, 4, 4, 5, 2],
-      [3, 3, 4, 5, 5, 5],
-      [3, 3, 5, 5, 5, 5]
+      [0, 0, 1, 1],
+      [0, 0, 1, 1],
+      [2, 2, 3, 3],
+      [2, 2, 3, 3]
     ];
 
     // 0: 空白, 1: 叉叉, 2: 鹿鹿
     let boardState = Array.from({ length: N }, () => Array(N).fill(0));
 
-    // 使用剛才為你準備的可愛 8-bit 鹿鹿圖片
-    const DEER_IMAGE_URL = "https://raw.githubusercontent.com/YourGitHubUsername/your-repo/main/deer.png"; // ⚠️發布後可替換為你放在 GitHub 上的圖片路徑或使用此 Base64
-    const DEER_IMAGE = "image_1.png"; // AI 生成的鹿鹿圖像物件
-
-    const MY_LIFF_ID = "YOUR_LIFF_ID_HERE"; // 填入你的 LINE LIFF ID
-
-    // 初始化 LINE LIFF 
-    async function initLiff() {
-      try {
-        await liff.init({ liffId: MY_LIFF_ID });
-        if (liff.isLoggedIn()) {
-          const profile = await liff.getProfile();
-          document.getElementById("player-name").textContent = `冒險者：${profile.displayName}`;
-        } else {
-          liff.login();
-        }
-      } catch (err) {
-        console.log("非 LINE 環境或未串接 LIFF ID：", err);
-      }
-    }
+    // 鹿鹿 SVG 圖示
+    const DEER_SVG = `
+      <svg class="deer-icon" viewBox="0 0 64 64" fill="none">
+        <path d="M20 22C18 14 11 12 9 13C8 17 12 21 16 25" stroke="#78471f" stroke-width="4" stroke-linecap="round"/>
+        <path d="M44 22C46 14 53 12 55 13C56 17 52 21 48 25" stroke="#78471f" stroke-width="4" stroke-linecap="round"/>
+        <ellipse cx="14" cy="30" rx="6" ry="3" transform="rotate(-30 14 30)" fill="#e59866"/>
+        <ellipse cx="50" cy="30" rx="6" ry="3" transform="rotate(30 50 30)" fill="#e59866"/>
+        <ellipse cx="32" cy="38" rx="18" ry="17" fill="#f39c12"/>
+        <circle cx="24" cy="37" r="3" fill="#2c3e50"/>
+        <circle cx="40" cy="37" r="3" fill="#2c3e50"/>
+        <circle cx="23" cy="36" r="1" fill="#ffffff"/>
+        <circle cx="39" cy="36" r="1" fill="#ffffff"/>
+        <ellipse cx="32" cy="44" rx="3.5" ry="2.5" fill="#78471f"/>
+      </svg>
+    `;
 
     const boardEl = document.getElementById("board");
     const counterEl = document.getElementById("counter");
@@ -155,73 +155,78 @@ HTML
         for (let c = 0; c < N; c++) {
           const cell = document.createElement("div");
           cell.className = `cell zone-${colorMap[r][c]}`;
-          
+
           if (boardState[r][c] === 1) {
-            cell.textContent = "✕";
-            cell.style.color = "#7a8a7c";
+            cell.innerHTML = `<span class="cross">✕</span>`;
           } else if (boardState[r][c] === 2) {
-            // 替換為鹿鹿圖像
-            const img = document.createElement("img");
-            img.src = DEER_IMAGE; 
-            img.alt = "鹿";
-            img.className = "deer-img";
-            cell.appendChild(img);
+            cell.innerHTML = DEER_SVG;
             deerCount++;
           }
 
-          cell.onclick = () => onCellClick(r, c);
+          cell.addEventListener("click", () => onCellClick(r, c));
           boardEl.appendChild(cell);
         }
       }
 
       counterEl.textContent = `已放鹿鹿: ${deerCount} / ${N}`;
-      validateGame(deerCount);
+      checkWin(deerCount);
     }
 
+    // 點擊格子
     function onCellClick(r, c) {
-      boardState[r][c] = (boardState[r][c] + 1) % 3;
-      msgEl.textContent = "";
+      if (boardState[r][c] === 2) {
+        // 取消鹿鹿
+        boardState[r][c] = 0;
+        recalculateAutoCrosses();
+      } else {
+        // 放置鹿鹿並自動輔助排擠其他格子
+        placeDeerWithAutoCross(r, c);
+      }
       renderBoard();
     }
 
-    function validateGame(deerCount) {
-      if (deerCount !== N) return;
+    // 輔助功能：放鹿時，自動把不能放的地方填上叉叉
+    function placeDeerWithAutoCross(r, c) {
+      boardState[r][c] = 2;
+      const myZone = colorMap[r][c];
 
-      const deers = [];
-      for (let r = 0; r < N; r++) {
-        for (let c = 0; c < N; c++) {
-          if (boardState[r][c] === 2) deers.push({ r, c, zone: colorMap[r][c] });
-        }
-      }
+      for (let i = 0; i < N; i++) {
+        for (let j = 0; j < N; j++) {
+          if (i === r && j === c) continue;
+          if (boardState[i][j] === 2) continue; // 不動其他鹿
 
-      const rows = new Set(), cols = new Set(), zones = new Set();
+          // 同行、同列、同色塊、或周圍九宮格
+          const sameRow = (i === r);
+          const sameCol = (j === c);
+          const sameZone = (colorMap[i][j] === myZone);
+          const isAdjacent = Math.abs(i - r) <= 1 && Math.abs(j - c) <= 1;
 
-      for (let i = 0; i < deers.length; i++) {
-        const { r, c, zone } = deers[i];
-
-        // 檢查同行/同列/同區域衝突
-        if (rows.has(r) || cols.has(c) || zones.has(zone)) {
-          msgEl.style.color = "#b04b07";
-          msgEl.textContent = "⚠️ 有鹿鹿在同行、同列或同色塊內，鹿角會打架喔！";
-          return;
-        }
-        rows.add(r);
-        cols.add(c);
-        zones.add(zone);
-
-        // 檢查九宮格鄰近衝突
-        for (let j = i + 1; j < deers.length; j++) {
-          const other = deers[j];
-          if (Math.abs(r - other.r) <= 1 && Math.abs(c - other.c) <= 1) {
-            msgEl.style.color = "#b04b07";
-            msgEl.textContent = "⚠️ 鹿鹿靠太近啦，鹿角碰在一起了！";
-            return;
+          if (sameRow || sameCol || sameZone || isAdjacent) {
+            boardState[i][j] = 1;
           }
         }
       }
+    }
 
-      msgEl.style.color = "#2b6a3e";
-      msgEl.textContent = "🎉 太厲害了！所有的鹿鹿都有了自己的大自然領地！";
+    // 當拿掉鹿時，重新計算剩餘的叉叉
+    function recalculateAutoCrosses() {
+      const activeDeers = [];
+      for (let r = 0; r < N; r++) {
+        for (let c = 0; c < N; c++) {
+          if (boardState[r][c] === 2) activeDeers.push({ r, c });
+          boardState[r][c] = 0;
+        }
+      }
+      activeDeers.forEach(d => placeDeerWithAutoCross(d.r, d.c));
+    }
+
+    function checkWin(count) {
+      if (count === N) {
+        msgEl.style.color = "#1e7e34";
+        msgEl.textContent = "🎉 恭喜通關！每隻鹿鹿都安靜舒服地待在領地了！";
+      } else {
+        msgEl.textContent = "";
+      }
     }
 
     function resetGame() {
@@ -230,23 +235,7 @@ HTML
       renderBoard();
     }
 
-    function shareVictory() {
-      if (!liff.isApiAvailable('shareTargetPicker')) {
-        alert("通關成功！快截圖分享給你的好友吧！");
-        return;
-      }
-      liff.shareTargetPicker([
-        {
-          type: "text",
-          text: "我剛剛在《鹿鹿領地拼圖》成功通關了！每隻鹿都有自己的領地不撞角。你也來試試：https://liff.line.me/" + MY_LIFF_ID
-        }
-      ]);
-    }
-
-    window.onload = () => {
-      initLiff();
-      renderBoard();
-    };
+    window.onload = renderBoard;
   </script>
 </body>
 </html>
